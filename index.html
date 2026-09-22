@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flores Amarillas - 21 de Septiembre</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0d0f1a 0%, #1e130c 50%, #2b1f09 100%);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .handwritten {
+            font-family: 'Caveat', cursive;
+        }
+
+        /* Glowing text effect */
+        .text-glow-yellow {
+            text-shadow: 0 0 15px rgba(253, 224, 71, 0.6), 0 0 30px rgba(234, 179, 8, 0.4);
+        }
+
+        /* Floating envelope animation */
+        @keyframes floatLetter {
+            0%, 100% {
+                transform: translateY(0px) rotate(-3deg);
+            }
+            50% {
+                transform: translateY(-18px) rotate(3deg);
+            }
+        }
+
+        .animate-float-letter {
+            animation: floatLetter 4s ease-in-out infinite;
+        }
+
+        /* Pulse aura for envelope */
+        @keyframes auraPulse {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(250, 204, 21, 0.5), 0 0 30px rgba(234, 179, 8, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(250, 204, 21, 0.9), 0 0 50px rgba(234, 179, 8, 0.6);
+            }
+        }
+
+        .envelope-glow {
+            animation: auraPulse 2.5s infinite;
+        }
+
+        /* Modal backdrop blur transition */
+        .modal-blur {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(250, 204, 21, 0.4);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="text-white relative min-h-screen flex flex-col justify-between select-none">
+
+    <!-- Interactive Background Canvas -->
+    <canvas id="flowerCanvas" class="fixed inset-0 w-full h-full z-0 pointer-events-auto cursor-pointer"></canvas>
+
+    <!-- Top Navigation / Header -->
+    <header class="relative z-10 w-full p-4 sm:p-6 flex justify-between items-center bg-black/20 backdrop-blur-md border-b border-amber-500/20">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-amber-400/20 border border-amber-400/50 flex items-center justify-center text-amber-300 text-xl shadow-lg">
+                🌻
+            </div>
+            <div>
+                <h1 class="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
+                    21 de Septiembre
+                </h1>
+                <p class="text-xs text-amber-200/70">Día de las Flores Amarillas</p>
+            </div>
+        </div>
+
+        <!-- Music Control Button -->
+        <button id="musicBtn" class="flex items-center gap-2 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-yellow-400/40 hover:border-yellow-400 text-yellow-300 px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all shadow-md hover:shadow-yellow-500/20 active:scale-95">
+            <i id="musicIcon" class="fas fa-music"></i>
+            <span id="musicText">Música Suave</span>
+        </button>
+    </header>
+
+    <!-- Main Floating Banner -->
+    <main class="relative z-10 flex-1 flex flex-col items-center justify-start pt-8 px-4 text-center pointer-events-none">
+        <div class="max-w-2xl bg-black/30 backdrop-blur-md border border-amber-400/30 p-6 sm:p-8 rounded-3xl shadow-2xl transition-all hover:border-amber-400/50">
+            <span class="inline-block px-3 py-1 bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 rounded-full text-xs font-semibold uppercase tracking-wider mb-3">
+                ✨ ¡Bienvenida Primavera! ✨
+            </span>
+            <h2 class="text-3xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-100 via-yellow-300 to-amber-400 mb-3 text-glow-yellow leading-tight">
+                Un Jardín de Flores Amarillas Para Ti
+            </h2>
+            <p class="text-sm sm:text-base text-amber-100/80 leading-relaxed max-w-lg mx-auto">
+                Toca la pantalla para plantar flores. Haz clic en la carta a la derecha para ver tu mensaje especial.
+            </p>
+        </div>
+    </main>
+
+    <!-- Floating Letter Trigger -->
+    <div class="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-20 pointer-events-auto">
+        <button id="openCardBtn" class="group relative flex items-center justify-center focus:outline-none">
+            <span class="absolute -inset-2 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 opacity-60 blur-md group-hover:opacity-100 transition duration-300 group-hover:duration-200 animate-pulse"></span>
+            
+            <div class="relative bg-gradient-to-br from-yellow-400 via-amber-400 to-yellow-600 text-gray-900 p-4 sm:p-5 rounded-2xl shadow-2xl border-2 border-yellow-200 animate-float-letter envelope-glow flex items-center gap-3 cursor-pointer transform group-hover:scale-105 transition-all">
+                <div class="text-3xl sm:text-4xl">
+                    ✉️
+                </div>
+                <div class="text-left hidden sm:block pr-2">
+                    <p class="text-xs uppercase font-bold text-amber-950 tracking-wider">Carta Especial</p>
+                    <p class="text-sm font-black text-slate-900">¡Haz clic para abrir!</p>
+                </div>
+                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">
+                    1
+                </span>
+            </div>
+        </button>
+    </div>
+
+    <!-- Modal Card Popup -->
+    <div id="cardModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 modal-blur opacity-0 pointer-events-none transition-all duration-300">
+        <div id="modalContent" class="relative w-full max-w-lg bg-gradient-to-b from-amber-50 via-yellow-50 to-amber-100 text-gray-800 rounded-3xl shadow-2xl border-4 border-amber-300/80 p-6 sm:p-8 transform scale-90 transition-all duration-300 overflow-hidden">
+            
+            <!-- Close Button -->
+            <button id="closeCardBtn" class="absolute top-4 right-4 text-amber-800/60 hover:text-amber-900 hover:bg-amber-200/50 w-9 h-9 rounded-full flex items-center justify-center text-xl transition-all">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <!-- Decorative corner floral elements -->
+            <div class="absolute -top-6 -left-6 text-5xl opacity-40 select-none">🌻</div>
+            <div class="absolute -bottom-6 -right-6 text-5xl opacity-40 select-none">🌻</div>
+
+            <div class="text-center mt-2">
+                <div class="w-16 h-16 bg-gradient-to-tr from-yellow-400 to-amber-300 rounded-full mx-auto flex items-center justify-center text-3xl shadow-md border-2 border-yellow-200 mb-4 animate-bounce">
+                    💌
+                </div>
+
+                <span class="text-xs font-bold tracking-widest text-amber-700 uppercase bg-amber-200/60 px-3 py-1 rounded-full">
+                    21 de Septiembre
+                </span>
+
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-amber-900 mt-3 mb-4">
+                    Para Ti En Este Día Especial
+                </h3>
+
+                <div class="w-24 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto mb-6"></div>
+
+                <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-amber-200 shadow-inner my-2">
+                    <p class="handwritten text-2xl sm:text-3xl text-amber-900 leading-snug font-bold">
+                        "Hoy no te quedarás sin tus flores. ¡Feliz Día del Estudiante, la Amistad y los Enamorados!"
+                    </p>
+                </div>
+
+                <p class="text-xs text-amber-800/70 mt-4 italic">
+                    ✨ Que tu día esté lleno de luz, alegría y flores deslumbrantes ✨
+                </p>
+
+                <!-- Action Button in Modal -->
+                <button id="modalBloomBtn" class="mt-6 w-full py-3 px-6 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:to-yellow-600 text-amber-950 font-bold rounded-xl shadow-lg hover:shadow-yellow-500/40 transform hover:-translate-y-0.5 transition-all text-sm uppercase tracking-wider">
+                    🌸 ¡Llenar pantalla de flores!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="relative z-10 w-full p-4 text-center text-xs text-amber-200/60 bg-black/20 backdrop-blur-xs border-t border-amber-500/10 pointer-events-none">
+        <p>Hecho con ❤️ para celebrar el 21 de Septiembre • Toca la pantalla para interactuar</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('flowerCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let flowers = [];
+        let particles = [];
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Audio Context setup for Synthesized Chimes
+        let audioCtx = null;
+        let isPlayingAudio = false;
+        let melodyInterval = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playChime(freq, duration = 1.5) {
+            if (!audioCtx || audioCtx.state !== 'running') return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        const notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+
+        function startMelody() {
+            if (melodyInterval) clearInterval(melodyInterval);
+            melodyInterval = setInterval(() => {
+                if (isPlayingAudio) {
+                    const randomNote = notes[Math.floor(Math.random() * notes.length)];
+                    playChime(randomNote, 2);
+                }
+            }, 1200);
+        }
+
+        const musicBtn = document.getElementById('musicBtn');
+        const musicIcon = document.getElementById('musicIcon');
+        const musicText = document.getElementById('musicText');
+
+        musicBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            isPlayingAudio = !isPlayingAudio;
+            if (isPlayingAudio) {
+                musicIcon.className = "fas fa-volume-up text-yellow-400";
+                musicText.innerText = "Música: Activada";
+                musicBtn.classList.add("border-yellow-400", "bg-yellow-500/30");
+                startMelody();
+            } else {
+                musicIcon.className = "fas fa-music";
+                musicText.innerText = "Música Suave";
+                musicBtn.classList.remove("border-yellow-400", "bg-yellow-500/30");
+                if (melodyInterval) clearInterval(melodyInterval);
+            }
+        });
+
+        class Flower {
+            constructor(x, y, autoFade = false, delayFadeTime = 3000) {
+                this.x = x;
+                this.y = y;
+                this.maxPetalRadius = Math.random() * 25 + 22;
+                this.currentRadius = 0;
+                this.growSpeed = Math.random() * 0.9 + 0.7;
+                this.petalCount = Math.floor(Math.random() * 4) + 12;
+                this.centerRadius = 0;
+                this.maxCenterRadius = this.maxPetalRadius * 0.38;
+                this.angleOffset = Math.random() * Math.PI * 2;
+                this.stemHeight = 0;
+                this.maxStemHeight = height - y;
+                
+                // Fade & Decay Properties
+                this.autoFade = autoFade;
+                this.alpha = 1.0;
+                this.isFading = false;
+                this.delayFadeTime = delayFadeTime;
+                this.createdAt = Date.now();
+
+                // Distinct type (Sunflower vs Daisy)
+                this.type = Math.random() > 0.4 ? 'sunflower' : 'daisy';
+            }
+
+            update() {
+                if (this.stemHeight < this.maxStemHeight) {
+                    this.stemHeight += 12;
+                }
+                if (this.currentRadius < this.maxPetalRadius) {
+                    this.currentRadius += this.growSpeed;
+                }
+                if (this.centerRadius < this.maxCenterRadius) {
+                    this.centerRadius += this.growSpeed * 0.4;
+                }
+
+                // Check for automatic gradual fade out
+                if (this.autoFade) {
+                    if (!this.isFading && (Date.now() - this.createdAt > this.delayFadeTime)) {
+                        this.isFading = true;
+                    }
+
+                    if (this.isFading) {
+                        this.alpha -= 0.015; // Slow, smooth fade out
+                        this.currentRadius *= 0.99; // Slight shrinking effect
+                    }
+                }
+            }
+
+            draw() {
+                if (this.alpha <= 0) return;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+
+                // Stem
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + this.stemHeight);
+                ctx.strokeStyle = '#2d5a27';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                // Leaves
+                if (this.stemHeight > 35) {
+                    ctx.fillStyle = '#3a7d34';
+                    ctx.beginPath();
+                    ctx.ellipse(this.x - 10, this.y + 25, 12, 5, -Math.PI / 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.ellipse(this.x + 10, this.y + 35, 12, 5, Math.PI / 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Petals
+                ctx.translate(this.x, this.y);
+                
+                for (let i = 0; i < this.petalCount; i++) {
+                    const angle = (i * (Math.PI * 2 / this.petalCount)) + this.angleOffset;
+                    ctx.save();
+                    ctx.rotate(angle);
+
+                    const petalGrad = ctx.createLinearGradient(0, 0, 0, -this.currentRadius);
+                    if (this.type === 'sunflower') {
+                        petalGrad.addColorStop(0, '#fef08a');
+                        petalGrad.addColorStop(0.6, '#facc15');
+                        petalGrad.addColorStop(1, '#eab308');
+                    } else {
+                        petalGrad.addColorStop(0, '#ffffff');
+                        petalGrad.addColorStop(0.5, '#fef08a');
+                        petalGrad.addColorStop(1, '#facc15');
+                    }
+
+                    ctx.fillStyle = petalGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(-this.currentRadius * 0.3, -this.currentRadius * 0.6, 0, -this.currentRadius);
+                    ctx.quadraticCurveTo(this.currentRadius * 0.3, -this.currentRadius * 0.6, 0, 0);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+
+                // Flower Center
+                const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.centerRadius);
+                if (this.type === 'sunflower') {
+                    centerGrad.addColorStop(0, '#78350f');
+                    centerGrad.addColorStop(0.8, '#451a03');
+                    centerGrad.addColorStop(1, '#f59e0b');
+                } else {
+                    centerGrad.addColorStop(0, '#f59e0b');
+                    centerGrad.addColorStop(1, '#d97706');
+                }
+
+                ctx.fillStyle = centerGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.centerRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, isHeart = false) {
+                this.x = x || Math.random() * width;
+                this.y = y || Math.random() * height;
+                this.size = Math.random() * 4 + 2;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = Math.random() * -1.5 - 0.5;
+                this.alpha = Math.random() * 0.8 + 0.2;
+                this.color = isHeart ? '#f43f5e' : (Math.random() > 0.3 ? '#fde047' : '#fbbf24');
+                this.isHeart = isHeart;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= 0.005;
+
+                if (this.alpha <= 0 || this.y < -10) {
+                    this.x = Math.random() * width;
+                    this.y = height + 10;
+                    this.alpha = Math.random() * 0.8 + 0.2;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                
+                if (this.isHeart) {
+                    ctx.translate(this.x, this.y);
+                    ctx.font = '12px serif';
+                    ctx.fillText('💛', 0, 0);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color;
+                }
+
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 50; i++) {
+            particles.push(new Particle(null, null, i % 10 === 0));
+        }
+
+        // Initial default bouquet (permanent)
+        function createInitialFlowers() {
+            const flowerPositions = [
+                {x: width * 0.2, y: height * 0.78},
+                {x: width * 0.35, y: height * 0.84},
+                {x: width * 0.5, y: height * 0.72},
+                {x: width * 0.65, y: height * 0.82},
+                {x: width * 0.8, y: height * 0.75}
+            ];
+
+            flowerPositions.forEach(pos => {
+                flowers.push(new Flower(pos.x, pos.y, false));
+            });
+        }
+        createInitialFlowers();
+
+        function animate() {
+            ctx.fillStyle = 'rgba(13, 15, 26, 0.25)';
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // Filter out faded flowers to keep performance smooth
+            flowers = flowers.filter(f => f.alpha > 0);
+
+            flowers.forEach(flower => {
+                flower.update();
+                flower.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function spawnFlower(x, y, autoFade = false, delayTime = 3000) {
+            flowers.push(new Flower(x, y, autoFade, delayTime));
+
+            if (isPlayingAudio && audioCtx) {
+                playChime(440 + Math.random() * 300, 1.2);
+            }
+
+            for (let i = 0; i < 6; i++) {
+                particles.push(new Particle(x + (Math.random() - 0.5) * 30, y + (Math.random() - 0.5) * 30, i % 2 === 0));
+            }
+        }
+
+        canvas.addEventListener('click', (e) => {
+            spawnFlower(e.clientX, e.clientY, false);
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                spawnFlower(touch.clientX, touch.clientY, false);
+            }
+        });
+
+        const openCardBtn = document.getElementById('openCardBtn');
+        const closeCardBtn = document.getElementById('closeCardBtn');
+        const cardModal = document.getElementById('cardModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalBloomBtn = document.getElementById('modalBloomBtn');
+
+        function openModal() {
+            cardModal.classList.remove('opacity-0', 'pointer-events-none');
+            cardModal.classList.add('opacity-100', 'pointer-events-auto');
+            modalContent.classList.remove('scale-90');
+            modalContent.classList.add('scale-100');
+
+            if (isPlayingAudio && audioCtx) {
+                playChime(523.25, 2);
+                setTimeout(() => playChime(659.25, 2), 200);
+            }
+        }
+
+        function closeModal() {
+            cardModal.classList.remove('opacity-100', 'pointer-events-auto');
+            cardModal.classList.add('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-90');
+        }
+
+        openCardBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openModal();
+        });
+
+        closeCardBtn.addEventListener('click', closeModal);
+
+        cardModal.addEventListener('click', (e) => {
+            if (e.target === cardModal) {
+                closeModal();
+            }
+        });
+
+        // MASS BLOOM & GRADUAL FADE OUT LOGIC
+        modalBloomBtn.addEventListener('click', () => {
+            closeModal();
+
+            // Spawn 50 flowers staggered across the entire screen
+            const totalFlowers = 45;
+            for (let i = 0; i < totalFlowers; i++) {
+                setTimeout(() => {
+                    const rx = Math.random() * (width * 0.92) + (width * 0.04);
+                    const ry = Math.random() * (height * 0.65) + (height * 0.25);
+                    
+                    // autoFade = true, delay = 2500ms before starting gradual fade
+                    spawnFlower(rx, ry, true, 2500 + Math.random() * 1500);
+                }, i * 60);
+            }
+        });
+    </script>
+</body>
+</html>
